@@ -45,5 +45,13 @@ def update_posts(post: Post):
     myPosts.append(post_dict)
     return {"Post details": post_dict}
 
-
-
+@app.delete("/posts/{id}", status_code= status.HTTP_202_ACCEPTED)
+def delete_posts(id: int):
+    for index, p in enumerate(myPosts):
+        if p["id"] == id:
+            print(index, p)
+            myPosts.pop(index)
+            return 'Successfully deleted the post!'
+        else:
+            err = str(status.HTTP_404_NOT_FOUND)
+            return f"Error {err}: Post with id:{id} not found!"
