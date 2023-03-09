@@ -9,6 +9,11 @@ app = FastAPI()
 def randnum():
     return randint(1,10000)
 
+def find_id(id):
+     for i, p in enumerate(myPosts):
+        if p["id"] == id:
+            return i
+
 myPosts = [{"title": "title of post 1", "content": "content of post 1", "id":1}, {"title": "title of post 2", "content": "content of post 2", "id":2}]
 
 class Post(BaseModel):
@@ -42,20 +47,24 @@ def update_posts(id: int, updatedpost: Post):
     for i,p in enumerate(myPosts):
         if p["id"] == id:
             updatedpost_dict = updatedpost.dict()
+            print("before:", myPosts)
             myPosts[i] = updatedpost_dict
             updatedpost_dict["id"] = p["id"]
+            print("after:", myPosts)
             return f'Successfully updated the post!: {updatedpost}'
         else:
             err = str(status.HTTP_404_NOT_FOUND)
             return f"Error {err}: Post with id:{id} not found!"
 
-@app.delete("/posts/{id}", status_code= status.HTTP_202_ACCEPTED)
+@app.delete("/posts/delete/{id}", status_code= status.HTTP_202_ACCEPTED)
 def delete_posts(id: int):
-    for index, p in enumerate(myPosts):
-        if p["id"] == id:
-            print(index, p)
-            myPosts.pop(index)
-            return 'Successfully deleted the post!'
-        else:
-            err = str(status.HTTP_404_NOT_FOUND)
-            return f"Error {err}: Post with id:{id} not found!"
+    inx = find_id(id)
+    if inx == None:
+        err = str(status.HTTP_404_NOT_FOUND)
+        return f"Error {err}: Post with id:{id} not found!"
+    else:
+        myPosts.pop(inx)
+        return 'Successfully deleted the post!'
+
+
+        
