@@ -42,19 +42,19 @@ def create_posts(post: Post):
     myPosts.append(post_dict)
     return {"Post details": post_dict}
 
-@app.put("/posts/{id}")
+@app.put("/posts/update/{id}")
 def update_posts(id: int, updatedpost: Post):
-    for i,p in enumerate(myPosts):
-        if p["id"] == id:
-            updatedpost_dict = updatedpost.dict()
-            print("before:", myPosts)
-            myPosts[i] = updatedpost_dict
-            updatedpost_dict["id"] = p["id"]
-            print("after:", myPosts)
-            return f'Successfully updated the post!: {updatedpost}'
-        else:
-            err = str(status.HTTP_404_NOT_FOUND)
-            return f"Error {err}: Post with id:{id} not found!"
+    inx = find_id(id)
+    if inx != None:
+        updatedpost_dict = updatedpost.dict()
+        print("before:", myPosts)
+        updatedpost_dict["id"] = id
+        myPosts[inx] = updatedpost_dict
+        print("after:", myPosts)
+        return f'Successfully updated the post!: {updatedpost}'
+    else:
+        err = str(status.HTTP_404_NOT_FOUND)
+        return f"Error {err}: Post with id:{id} not found!"
 
 @app.delete("/posts/delete/{id}", status_code= status.HTTP_202_ACCEPTED)
 def delete_posts(id: int):
