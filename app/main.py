@@ -20,7 +20,7 @@ def find_id(id):
 
 while True:
     try:
-        conn = psycopg2.connect(host= str(secretkey['host']), database= str(secretkey['database']), user= str(secretkey['user']), password = str(secretkey['password']), cursor_factory= RealDictCursor)
+        conn = psycopg2.connect(host= str(skey['host']), database= str(skey['database']), user= str(skey['user']), password = str(skey['password']), cursor_factory= RealDictCursor)
         cursor = conn.cursor()
         print('Successfully connected to the database!')
         break
@@ -60,17 +60,15 @@ def create_posts(post: Post):
 
 @app.put("/posts/update/{id}")
 def update_posts(id: int, updatedpost: Post):
-    inx = find_id(id)
-    if inx != None:
-        updatedpost_dict = updatedpost.dict()
-        print("before:", myPosts)
-        updatedpost_dict["id"] = id
-        myPosts[inx] = updatedpost_dict
-        print("after:", myPosts)
-        return f'Successfully updated the post!: {updatedpost}'
-    else:
+    id = str(id)
+    cursor.execute("""UPDATE posts SET title = %s, content = %s, published = %s where id = %s RETURNING *""", (updatedpost.title, updatedpost.content, updatedpost.published, id))
+    uppost = cursor.fetchone()
+    conn.commit()
+    if not uppost:
         err = str(status.HTTP_404_NOT_FOUND)
         return f"Error {err}: Post with id:{id} not found!"
+    else:
+        return {'Successfully updated the post!': uppost}        
 
 @app.delete("/posts/delete/{id}", status_code= status.HTTP_202_ACCEPTED)
 def delete_posts(id: int):
